@@ -22,14 +22,13 @@ $appName = config('app.name', 'Fechou');
     <main class="auth-grid">
         <section class="auth-brand">
             <div class="brand-mark">F</div>
-            <span class="eyebrow">SaaS profissional para orçamentos</span>
+            <span class="eyebrow">Orcamentos profissionais Com poucos cliques</span>
             <h1>Feche mais vendas com orçamentos que parecem de produto premium.</h1>
             <p>Fechou foi desenhado para transformar propostas em conversão, com uma experiência rápida, elegante e confiável.</p>
 
             <div class="trust-list">
                 <span>Multiempresa</span>
                 <span>PDF profissional</span>
-                <span>Dark Mode</span>
                 <span>Multiusuário</span>
             </div>
         </section>
