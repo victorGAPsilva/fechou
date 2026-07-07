@@ -1,0 +1,182 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Models\Product;
+
+final class ProductController extends Controller
+{
+    public function index(): void
+    {
+        $user = $this->requireUser();
+        $search = trim((string) ($_GET['q'] ?? ''));
+        $productModel = new Product();
+
+        $this->render('products/index', [
+            'title' => 'Produtos',
+            'products' => $productModel->paginateByCompany((int) $user['company_id'], $search, 20),
+            'totalProducts' => $productModel->countByCompany((int) $user['company_id'], $search),
+            'search' => $search,
+        ]);
+    }
+
+    public function create(): void
+    {
+        $this->showForm('Novo produto', '/products', []);
+    }
+
+    public function store(): void
+    {
+        $user = $this->requireUser();
+
+        if (!verify_csrf_token($_POST['_token'] ?? null)) {
+            $this->failRedirect('/products/new', 'A sessão expirou. Tente novamente.', $_POST);
+        }
+
+        $data = $this->sanitize($_POST);
+        $data['company_id'] = (int) $user['company_id'];
+        $data['product_category_id'] = $this->resolveCategoryId((int) $user['company_id'], (string) ($data['category_name'] ?? ''));
+
+        if ($data['name'] === '') {
+            $this->failRedirect('/products/new', 'Informe o nome do produto.', $_POST);
+        }
+
+        (new Product())->create($data);
+
+        clear_old();
+        set_flash('success', 'Produto criado com sucesso.');
+        redirect('/products');
+    }
+
+    public function edit(string $id): void
+    {
+        $user = $this->requireUser();
+        $product = (new Product())->findByIdAndCompany((int) $id, (int) $user['company_id']);
+
+        if (!$product) {
+            set_flash('error', 'Produto não encontrado.');
+            redirect('/products');
+        }
+
+        $this->showForm('Editar produto', '/products/' . $id, $product);
+    }
+
+    public function update(string $id): void
+    {
+        $user = $this->requireUser();
+
+        if (!verify_csrf_token($_POST['_token'] ?? null)) {
+            $this->failRedirect('/products/' . $id . '/edit', 'A sessão expirou. Tente novamente.', $_POST);
+        }
+
+        $productModel = new Product();
+        $product = $productModel->findByIdAndCompany((int) $id, (int) $user['company_id']);
+
+        if (!$product) {
+            set_flash('error', 'Produto não encontrado.');
+            redirect('/products');
+        }
+
+        $data = $this->sanitize($_POST);
+        $data['company_id'] = (int) $user['company_id'];
+        $data['product_category_id'] = $this->resolveCategoryId((int) $user['company_id'], (string) ($data['category_name'] ?? ''));
+
+        if ($data['name'] === '') {
+            $this->failRedirect('/products/' . $id . '/edit', 'Informe o nome do produto.', $_POST);
+        }
+
+        $productModel->update((int) $id, (int) $user['company_id'], $data);
+
+        clear_old();
+        set_flash('success', 'Produto atualizado com sucesso.');
+        redirect('/products');
+    }
+
+    public function destroy(string $id): void
+    {
+        $user = $this->requireUser();
+
+        if (!verify_csrf_token($_POST['_token'] ?? null)) {
+            set_flash('error', 'A sessão expirou. Tente novamente.');
+            redirect('/products');
+        }
+
+        (new Product())->delete((int) $id, (int) $user['company_id']);
+        set_flash('success', 'Produto excluído com sucesso.');
+        redirect('/products');
+    }
+
+    private function showForm(string $title, string $action, array $product): void
+    {
+        $this->render('products/form', [
+            'title' => $title,
+            'action' => $action,
+            'product' => $product,
+        ]);
+    }
+
+    private function requireUser(): array
+    {
+        $user = auth_user();
+
+        if (!$user) {
+            redirect('/login');
+        }
+
+        return $user;
+    }
+
+    private function failRedirect(string $path, string $message, array $payload): void
+    {
+        set_flash('error', $message);
+        with_old($payload);
+        redirect($path);
+    }
+
+    private function sanitize(array $input): array
+    {
+        return [
+            'name' => trim((string) ($input['name'] ?? '')),
+            'category_name' => trim((string) ($input['category_name'] ?? '')),
+            'supplier_name' => trim((string) ($input['supplier_name'] ?? '')),
+            'description' => trim((string) ($input['description'] ?? '')),
+            'unit' => trim((string) ($input['unit'] ?? 'un')),
+            'quantity' => trim((string) ($input['quantity'] ?? '0')),
+            'stock_quantity' => trim((string) ($input['stock_quantity'] ?? '0')),
+            'price' => trim((string) ($input['price'] ?? '0')),
+            'status' => in_array(($input['status'] ?? 'active'), ['active', 'inactive'], true) ? (string) $input['status'] : 'active',
+        ];
+    }
+
+    private function resolveCategoryId(int $companyId, string $categoryName): ?int
+    {
+        $categoryName = trim($categoryName);
+
+        if ($categoryName === '') {
+            return null;
+        }
+
+        $statement = \App\Core\Database::connection()->prepare('SELECT id FROM product_categories WHERE company_id = :company_id AND name = :name LIMIT 1');
+        $statement->execute([
+            'company_id' => $companyId,
+            'name' => $categoryName,
+        ]);
+
+        $id = $statement->fetchColumn();
+
+        if ($id !== false) {
+            return (int) $id;
+        }
+
+        $insert = \App\Core\Database::connection()->prepare('INSERT INTO product_categories (company_id, name, created_at, updated_at) VALUES (:company_id, :name, NOW(), NOW())');
+        $insert->execute([
+            'company_id' => $companyId,
+            'name' => $categoryName,
+        ]);
+
+        return (int) \App\Core\Database::connection()->lastInsertId();
+    }
+}

@@ -1,0 +1,4 @@
+/storage/logs/*
+/storage/uploads/*
+/storage/pdf/*
+!.gitkeep
