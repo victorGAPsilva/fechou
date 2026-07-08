@@ -21,4 +21,28 @@ class Controller
         header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? url('/')));
         exit;
     }
+
+    protected function downloadCsv(string $filename, array $headers, array $rows): void
+    {
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $output = fopen('php://output', 'w');
+
+        if ($output === false) {
+            exit;
+        }
+
+        fwrite($output, "\xEF\xBB\xBF");
+        fputcsv($output, $headers, ';');
+
+        foreach ($rows as $row) {
+            fputcsv($output, $row, ';');
+        }
+
+        fclose($output);
+        exit;
+    }
 }

@@ -40,7 +40,7 @@ $statusLabels = [
                 <?php foreach ($funnel as $step): ?>
                     <div
                         class="chart-bar <?= !empty($step['accent']) ? 'chart-bar-accent' : '' ?>"
-                        style="height: <?= e((string) $step['height']) ?>%"
+                        style="height: <?= e((string) $step['height']) ?>%; --bar-color: <?= e($step['color'] ?? '#c7d0dc') ?>"
                         title="<?= e($step['label'] . ': ' . $step['count']) ?>"
                     ></div>
                 <?php endforeach; ?>
@@ -49,8 +49,29 @@ $statusLabels = [
             <div class="summary-stack dashboard-summary">
                 <?php foreach ($funnel as $step): ?>
                     <div class="summary-line">
-                        <span><?= e($step['label']) ?></span>
+                        <span class="funnel-label" style="--bar-color: <?= e($step['color'] ?? '#c7d0dc') ?>"><?= e($step['label']) ?></span>
                         <strong><?= e((string) $step['count']) ?></strong>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="panel-head panel-head-spaced">
+                <div>
+                    <span class="eyebrow">Receita</span>
+                    <h2>Evolucao mensal</h2>
+                </div>
+            </div>
+
+            <div class="monthly-chart">
+                <?php foreach ($monthlySeries as $month): ?>
+                    <div class="monthly-column">
+                        <div
+                            class="monthly-bar"
+                            style="height: <?= e((string) $month['height']) ?>%"
+                            title="<?= e($month['label'] . ': ' . money_format_ptbr((float) $month['total_value'])) ?>"
+                        ></div>
+                        <small><?= e($month['label']) ?></small>
+                        <strong><?= e((string) $month['quotes_count']) ?></strong>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -72,6 +93,26 @@ $statusLabels = [
                     </div>
                 <?php endforeach; ?>
             </div>
+
+            <div class="panel-head panel-head-spaced">
+                <div>
+                    <span class="eyebrow">Clientes</span>
+                    <h2>Ranking por valor</h2>
+                </div>
+            </div>
+
+            <?php if (!empty($topClients)): ?>
+                <div class="summary-stack dashboard-summary">
+                    <?php foreach ($topClients as $client): ?>
+                        <div class="summary-line">
+                            <span><?= e($client['client_name'] ?: 'Cliente nao informado') ?></span>
+                            <strong><?= e(money_format_ptbr((float) $client['total_value'])) ?></strong>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <p class="muted">Nenhum cliente com orcamento ainda.</p>
+            <?php endif; ?>
 
             <div class="panel-head panel-head-spaced">
                 <div>

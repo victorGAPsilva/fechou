@@ -28,6 +28,27 @@ final class ProductController extends Controller
         $this->showForm('Novo produto', '/products', []);
     }
 
+    public function export(): void
+    {
+        $user = $this->requireUser();
+        $search = trim((string) ($_GET['q'] ?? ''));
+        $products = (new Product())->paginateByCompany((int) $user['company_id'], $search, 10000);
+
+        $rows = array_map(static fn (array $product): array => [
+            $product['name'] ?? '',
+            $product['category_name'] ?? '',
+            $product['supplier_name'] ?? '',
+            $product['unit'] ?? '',
+            $product['quantity'] ?? '',
+            $product['stock_quantity'] ?? '',
+            money_format_ptbr((float) ($product['price'] ?? 0)),
+            $product['status'] ?? '',
+            $product['description'] ?? '',
+        ], $products);
+
+        $this->downloadCsv('produtos.csv', ['Nome', 'Categoria', 'Fornecedor', 'Unidade', 'Quantidade', 'Estoque', 'Preco', 'Status', 'Descricao'], $rows);
+    }
+
     public function store(): void
     {
         $user = $this->requireUser();

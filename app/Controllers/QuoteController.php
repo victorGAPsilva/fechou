@@ -28,6 +28,29 @@ final class QuoteController extends Controller
         ]);
     }
 
+    public function export(): void
+    {
+        $user = $this->requireUser();
+        $search = trim((string) ($_GET['q'] ?? ''));
+        $quotes = (new Quote())->paginateByCompany((int) $user['company_id'], $search, 10000);
+
+        $rows = array_map(static fn (array $quote): array => [
+            $quote['quote_number'] ?? '',
+            $quote['title'] ?? '',
+            $quote['client_name'] ?? '',
+            $quote['validity_days'] ?? '',
+            money_format_ptbr((float) ($quote['subtotal_total'] ?? 0)),
+            money_format_ptbr((float) ($quote['discount_total'] ?? 0)),
+            money_format_ptbr((float) ($quote['shipping_total'] ?? 0)),
+            money_format_ptbr((float) ($quote['total'] ?? 0)),
+            $quote['status'] ?? '',
+            $quote['template_key'] ?? '',
+            $quote['created_at'] ?? '',
+        ], $quotes);
+
+        $this->downloadCsv('orcamentos.csv', ['Numero', 'Titulo', 'Cliente', 'Validade dias', 'Subtotal', 'Desconto', 'Frete', 'Total', 'Status', 'Modelo', 'Criado em'], $rows);
+    }
+
     public function create(): void
     {
         $user = $this->requireUser();
@@ -123,6 +146,28 @@ final class QuoteController extends Controller
 
         clear_old();
         set_flash('success', 'Orçamento atualizado com sucesso.');
+        redirect('/quotes');
+    }
+
+    public function updateStatus(string $id): void
+    {
+        $user = $this->requireUser();
+
+        if (!verify_csrf_token($_POST['_token'] ?? null)) {
+            set_flash('error', 'A sessao expirou. Tente novamente.');
+            redirect('/quotes');
+        }
+
+        $status = (string) ($_POST['status'] ?? 'draft');
+
+        if (!in_array($status, ['draft', 'sent', 'viewed', 'accepted', 'rejected', 'canceled'], true)) {
+            set_flash('error', 'Status invalido para este orcamento.');
+            redirect('/quotes');
+        }
+
+        $updated = (new Quote())->updateStatus((int) $id, (int) $user['company_id'], $status);
+
+        set_flash($updated ? 'success' : 'error', $updated ? 'Status atualizado com sucesso.' : 'Orcamento nao encontrado.');
         redirect('/quotes');
     }
 

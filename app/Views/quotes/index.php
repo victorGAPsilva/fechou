@@ -8,6 +8,16 @@ $pdfTemplates = [
     'executive' => 'Executivo',
     'premium' => 'Premium',
 ];
+
+$statusLabels = [
+    'draft' => 'Rascunho',
+    'sent' => 'Enviado',
+    'viewed' => 'Visualizado',
+    'accepted' => 'Aceito',
+    'rejected' => 'Recusado',
+    'canceled' => 'Cancelado',
+];
+$exportQuery = $search !== '' ? '?q=' . urlencode((string) $search) : '';
 ?>
 
 <section class="section-stack">
@@ -18,7 +28,10 @@ $pdfTemplates = [
             <p class="muted">Crie propostas visualmente fortes e acompanhe o status de cada envio.</p>
         </div>
 
-        <a class="button button-primary" href="<?= e(url('/quotes/new')) ?>">Novo orçamento</a>
+        <div class="row-actions">
+            <a class="button button-ghost" href="<?= e(url('/quotes/export' . $exportQuery)) ?>" data-no-loading="true">Exportar CSV</a>
+            <a class="button button-primary" href="<?= e(url('/quotes/new')) ?>">Novo orçamento</a>
+        </div>
     </div>
 
     <form class="search-bar" method="get" action="<?= e(url('/quotes')) ?>">
@@ -59,7 +72,16 @@ $pdfTemplates = [
                             <td><?= e((string) ($quote['validity_days'] ?? 0)) ?> dias</td>
                             <td><?= e(money_format_ptbr((float) $quote['total'])) ?></td>
                             <td>
-                                <span class="badge <?= ($quote['status'] ?? 'draft') === 'accepted' ? 'badge-positive' : 'badge-muted' ?>"><?= e(mb_strtoupper((string) ($quote['status'] ?? 'draft'))) ?></span>
+                                <form method="post" action="<?= e(url('/quotes/' . $quote['id'] . '/status')) ?>" class="status-select-form" data-auto-submit>
+                                    <?= csrf_field() ?>
+                                    <select name="status" aria-label="Status do orçamento">
+                                        <?php foreach ($statusLabels as $statusKey => $statusLabel): ?>
+                                            <option value="<?= e($statusKey) ?>" <?= ($quote['status'] ?? 'draft') === $statusKey ? 'selected' : '' ?>>
+                                                <?= e($statusLabel) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </form>
                             </td>
                             <td>
                                 <div class="row-actions">

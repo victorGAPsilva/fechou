@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+
+$exportQuery = $search !== '' ? '?q=' . urlencode((string) $search) : '';
 ?>
 
 <section class="section-stack">
@@ -11,7 +13,10 @@ declare(strict_types=1);
             <p class="muted">Cadastre serviços padrão e reaproveite em orçamentos com cálculo rápido.</p>
         </div>
 
-        <a class="button button-primary" href="<?= e(url('/services/new')) ?>">Novo serviço</a>
+        <div class="row-actions">
+            <a class="button button-ghost" href="<?= e(url('/services/export' . $exportQuery)) ?>" data-no-loading="true">Exportar CSV</a>
+            <a class="button button-primary" href="<?= e(url('/services/new')) ?>">Novo serviço</a>
+        </div>
     </div>
 
     <form class="search-bar" method="get" action="<?= e(url('/services')) ?>">

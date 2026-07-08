@@ -181,6 +181,36 @@ final class Quote extends BaseModel
         ]);
     }
 
+    public function updateStatus(int $id, int $companyId, string $status): bool
+    {
+        $statusColumns = [
+            'sent' => 'sent_at',
+            'viewed' => 'viewed_at',
+            'accepted' => 'accepted_at',
+            'rejected' => 'rejected_at',
+            'canceled' => 'canceled_at',
+        ];
+
+        $eventColumn = $statusColumns[$status] ?? null;
+        $eventSql = $eventColumn ? ", {$eventColumn} = COALESCE({$eventColumn}, NOW())" : '';
+
+        $statement = $this->db->prepare(
+            "UPDATE quotes
+             SET status = :status,
+                 updated_at = NOW()
+                 {$eventSql}
+             WHERE id = :id AND company_id = :company_id"
+        );
+
+        $statement->execute([
+            'id' => $id,
+            'company_id' => $companyId,
+            'status' => $status,
+        ]);
+
+        return $statement->rowCount() > 0;
+    }
+
     public function calculateTotals(array $items, float $shippingTotal, float $globalDiscount): array
     {
         $subtotal = 0.0;

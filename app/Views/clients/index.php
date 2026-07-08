@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 $activeClients = 0;
 $inactiveClients = 0;
+$exportQuery = $search !== '' ? '?q=' . urlencode((string) $search) : '';
 
 foreach ($clients as $client) {
     if (($client['status'] ?? 'active') === 'active') {
@@ -24,7 +25,10 @@ foreach ($clients as $client) {
                 <p class="muted">Organize seus contatos com isolamento por empresa, busca rápida e visual de operação premium.</p>
             </div>
 
-            <a class="button button-primary" href="<?= e(url('/clients/new')) ?>">Novo cliente</a>
+            <div class="row-actions">
+                <a class="button button-ghost" href="<?= e(url('/clients/export' . $exportQuery)) ?>" data-no-loading="true">Exportar CSV</a>
+                <a class="button button-primary" href="<?= e(url('/clients/new')) ?>">Novo cliente</a>
+            </div>
         </div>
 
         <div class="stats-grid clients-stats-grid">

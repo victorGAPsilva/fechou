@@ -28,6 +28,27 @@ final class ClientController extends Controller
         $this->showForm('Criar cliente', '/clients', []);
     }
 
+    public function export(): void
+    {
+        $user = $this->requireUser();
+        $search = trim((string) ($_GET['q'] ?? ''));
+        $clients = (new Client())->paginateByCompany((int) $user['company_id'], $search, 10000);
+
+        $rows = array_map(static fn (array $client): array => [
+            $client['name'] ?? '',
+            $client['company_name'] ?? '',
+            $client['email'] ?? '',
+            $client['phone'] ?? '',
+            $client['whatsapp'] ?? '',
+            $client['document'] ?? '',
+            $client['city'] ?? '',
+            $client['state'] ?? '',
+            $client['status'] ?? '',
+        ], $clients);
+
+        $this->downloadCsv('clientes.csv', ['Nome', 'Empresa', 'E-mail', 'Telefone', 'WhatsApp', 'Documento', 'Cidade', 'Estado', 'Status'], $rows);
+    }
+
     public function store(): void
     {
         $user = $this->requireUser();

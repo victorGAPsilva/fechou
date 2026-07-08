@@ -24,6 +24,7 @@ final class DashboardController extends Controller
         $proposalTotal = $this->sumRows('quotes', $companyId, 'total');
         $approvedTotal = $this->sumRows('quotes', $companyId, 'total', "AND status = 'accepted'");
         $acceptedQuotes = $this->countRows('quotes', $companyId, "AND status = 'accepted'");
+        $averageTicket = $totalQuotes > 0 ? $proposalTotal / $totalQuotes : 0.0;
 
         $this->render('dashboard/index', [
             'title' => 'Dashboard',
@@ -68,7 +69,10 @@ final class DashboardController extends Controller
                 ['label' => 'Servicos ativos', 'value' => (string) $this->countRows('services', $companyId, "AND status = 'active'")],
                 ['label' => 'Produtos ativos', 'value' => (string) $this->countRows('products', $companyId, "AND status = 'active'")],
                 ['label' => 'Taxa de aprovacao', 'value' => $this->approvalRate($totalQuotes, $acceptedQuotes)],
+                ['label' => 'Ticket medio', 'value' => money_format_ptbr($averageTicket)],
             ],
+            'monthlySeries' => $this->monthlySeries($companyId),
+            'topClients' => $this->topClients($companyId),
         ]);
     }
 
@@ -145,6 +149,14 @@ final class DashboardController extends Controller
             'rejected' => 'Recusado',
             'canceled' => 'Cancelado',
         ];
+        $colors = [
+            'draft' => '#94a3b8',
+            'sent' => '#3b82f6',
+            'viewed' => '#8b5cf6',
+            'accepted' => '#16a34a',
+            'rejected' => '#ef4444',
+            'canceled' => '#f59e0b',
+        ];
 
         $statement = Database::connection()->prepare(
             'SELECT status, COUNT(*) AS total
@@ -169,6 +181,7 @@ final class DashboardController extends Controller
                 'label' => $label,
                 'count' => $count,
                 'height' => max(10, (int) round(($count / $max) * 100)),
+                'color' => $colors[$status],
                 'accent' => $status === 'accepted',
             ];
         }
@@ -184,6 +197,74 @@ final class DashboardController extends Controller
              LEFT JOIN clients ON clients.id = quotes.client_id AND clients.company_id = quotes.company_id
              WHERE quotes.company_id = :company_id
              ORDER BY quotes.created_at DESC
+             LIMIT 5'
+        );
+        $statement->execute(['company_id' => $companyId]);
+
+        return $statement->fetchAll();
+    }
+
+    private function monthlySeries(int $companyId): array
+    {
+        $statement = Database::connection()->prepare(
+            "SELECT DATE_FORMAT(created_at, '%Y-%m') AS period_key,
+                    COUNT(*) AS quotes_count,
+                    COALESCE(SUM(total), 0) AS total_value
+             FROM quotes
+             WHERE company_id = :company_id
+               AND created_at >= :start_date
+             GROUP BY period_key"
+        );
+        $start = (new DateTimeImmutable('first day of this month 00:00:00'))->modify('-5 months');
+        $statement->execute([
+            'company_id' => $companyId,
+            'start_date' => $start->format('Y-m-d H:i:s'),
+        ]);
+
+        $rows = [];
+        foreach ($statement->fetchAll() as $row) {
+            $rows[(string) $row['period_key']] = [
+                'quotes_count' => (int) $row['quotes_count'],
+                'total_value' => (float) $row['total_value'],
+            ];
+        }
+
+        $series = [];
+        $maxValue = 0.0;
+
+        for ($i = 0; $i < 6; $i++) {
+            $month = $start->modify("+{$i} months");
+            $key = $month->format('Y-m');
+            $value = (float) ($rows[$key]['total_value'] ?? 0);
+            $maxValue = max($maxValue, $value);
+
+            $series[] = [
+                'label' => $month->format('m/Y'),
+                'quotes_count' => (int) ($rows[$key]['quotes_count'] ?? 0),
+                'total_value' => $value,
+                'height' => 12,
+            ];
+        }
+
+        foreach ($series as &$item) {
+            $item['height'] = $maxValue > 0 ? max(12, (int) round(((float) $item['total_value'] / $maxValue) * 100)) : 12;
+        }
+        unset($item);
+
+        return $series;
+    }
+
+    private function topClients(int $companyId): array
+    {
+        $statement = Database::connection()->prepare(
+            'SELECT clients.name AS client_name,
+                    COUNT(quotes.id) AS quotes_count,
+                    COALESCE(SUM(quotes.total), 0) AS total_value
+             FROM quotes
+             LEFT JOIN clients ON clients.id = quotes.client_id AND clients.company_id = quotes.company_id
+             WHERE quotes.company_id = :company_id
+             GROUP BY clients.id, clients.name
+             ORDER BY total_value DESC, quotes_count DESC
              LIMIT 5'
         );
         $statement->execute(['company_id' => $companyId]);

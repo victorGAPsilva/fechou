@@ -33,6 +33,86 @@
         });
     });
 
+    const onlyDigits = (value) => String(value || '').replace(/\D/g, '');
+
+    const maskPhone = (value) => {
+        const digits = onlyDigits(value).slice(0, 11);
+
+        if (digits.length <= 10) {
+            return digits
+                .replace(/^(\d{0,2})(\d{0,4})(\d{0,4}).*/, (_, ddd, first, last) => {
+                    if (!ddd) return '';
+                    if (!first) return `(${ddd}`;
+                    if (!last) return `(${ddd}) ${first}`;
+                    return `(${ddd}) ${first}-${last}`;
+                });
+        }
+
+        return digits.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
+    };
+
+    const maskDocument = (value) => {
+        const digits = onlyDigits(value).slice(0, 14);
+
+        if (digits.length <= 11) {
+            return digits
+                .replace(/^(\d{3})(\d)/, '$1.$2')
+                .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+                .replace(/\.(\d{3})(\d)/, '.$1-$2');
+        }
+
+        return digits
+            .replace(/^(\d{2})(\d)/, '$1.$2')
+            .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+            .replace(/\.(\d{3})(\d)/, '.$1/$2')
+            .replace(/(\d{4})(\d)/, '$1-$2');
+    };
+
+    const maskZipCode = (value) => onlyDigits(value).slice(0, 8).replace(/^(\d{5})(\d)/, '$1-$2');
+
+    const maskMoney = (value) => {
+        const digits = onlyDigits(value);
+        const cents = Number.parseInt(digits || '0', 10);
+        return (cents / 100).toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+    };
+
+    const maskRules = [
+        ['input[name="phone"], input[name="whatsapp"]', maskPhone],
+        ['input[name="document"]', maskDocument],
+        ['input[name="zip_code"]', maskZipCode],
+        ['input[name="price"], input[name="shipping_total"], input[name="global_discount"], input[data-unit-price], input[data-discount]', maskMoney],
+    ];
+
+    document.addEventListener('input', (event) => {
+        const input = event.target;
+
+        if (!(input instanceof HTMLInputElement)) {
+            return;
+        }
+
+        const rule = maskRules.find(([selector]) => input.matches(selector));
+
+        if (!rule) {
+            return;
+        }
+
+        const startAtEnd = input.selectionStart === input.value.length;
+        input.value = rule[1](input.value);
+
+        if (startAtEnd) {
+            input.setSelectionRange(input.value.length, input.value.length);
+        }
+    });
+
+    document.querySelectorAll('input[name="email"]').forEach((input) => {
+        input.addEventListener('input', () => {
+            input.setCustomValidity(input.validity.typeMismatch ? 'Informe um e-mail valido.' : '');
+        });
+    });
+
     const navToggle = document.querySelector('[data-mobile-nav-toggle]');
     const navClose = document.querySelector('[data-mobile-nav-close]');
     const mobileNavLinks = document.querySelectorAll('.sidebar-nav a');
@@ -154,6 +234,24 @@
 
     showFlashMessage();
 
+    document.querySelectorAll('form[data-auto-submit] select').forEach((select) => {
+        select.addEventListener('change', () => {
+            const form = select.closest('form');
+
+            if (!form) {
+                return;
+            }
+
+            if (typeof form.requestSubmit === 'function') {
+                form.requestSubmit();
+                return;
+            }
+
+            showLoading('Processando', 'Aguarde enquanto concluimos a solicitacao.');
+            window.setTimeout(() => HTMLFormElement.prototype.submit.call(form), 80);
+        });
+    });
+
     document.querySelectorAll('form').forEach((form) => {
         form.addEventListener('submit', (event) => {
             if (form.dataset.noLoading === 'true') {
@@ -208,6 +306,10 @@
 
     document.querySelectorAll('a[href]').forEach((link) => {
         link.addEventListener('click', (event) => {
+            if (link.dataset.noLoading === 'true') {
+                return;
+            }
+
             if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
                 return;
             }

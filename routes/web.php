@@ -29,6 +29,7 @@ return static function (Router $router): void {
     $router->get('/dashboard', [DashboardController::class, 'index']);
 
     $router->get('/clients', [ClientController::class, 'index']);
+    $router->get('/clients/export', [ClientController::class, 'export']);
     $router->get('/clients/new', [ClientController::class, 'create']);
     $router->post('/clients', [ClientController::class, 'store']);
     $router->get('/clients/{id}/edit', [ClientController::class, 'edit']);
@@ -36,6 +37,7 @@ return static function (Router $router): void {
     $router->post('/clients/{id}/delete', [ClientController::class, 'destroy']);
 
     $router->get('/services', [ServiceController::class, 'index']);
+    $router->get('/services/export', [ServiceController::class, 'export']);
     $router->get('/services/new', [ServiceController::class, 'create']);
     $router->post('/services', [ServiceController::class, 'store']);
     $router->get('/services/{id}/edit', [ServiceController::class, 'edit']);
@@ -43,6 +45,7 @@ return static function (Router $router): void {
     $router->post('/services/{id}/delete', [ServiceController::class, 'destroy']);
 
     $router->get('/products', [ProductController::class, 'index']);
+    $router->get('/products/export', [ProductController::class, 'export']);
     $router->get('/products/new', [ProductController::class, 'create']);
     $router->post('/products', [ProductController::class, 'store']);
     $router->get('/products/{id}/edit', [ProductController::class, 'edit']);
@@ -50,10 +53,12 @@ return static function (Router $router): void {
     $router->post('/products/{id}/delete', [ProductController::class, 'destroy']);
 
     $router->get('/quotes', [QuoteController::class, 'index']);
+    $router->get('/quotes/export', [QuoteController::class, 'export']);
     $router->get('/quotes/new', [QuoteController::class, 'create']);
     $router->post('/quotes', [QuoteController::class, 'store']);
     $router->get('/quotes/{id}/pdf', [QuoteController::class, 'downloadPdf']);
     $router->get('/quotes/{id}/edit', [QuoteController::class, 'edit']);
+    $router->post('/quotes/{id}/status', [QuoteController::class, 'updateStatus']);
     $router->post('/quotes/{id}', [QuoteController::class, 'update']);
     $router->post('/quotes/{id}/delete', [QuoteController::class, 'destroy']);
 

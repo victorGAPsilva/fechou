@@ -28,6 +28,25 @@ final class ServiceController extends Controller
         $this->showForm('Novo serviço', '/services', []);
     }
 
+    public function export(): void
+    {
+        $user = $this->requireUser();
+        $search = trim((string) ($_GET['q'] ?? ''));
+        $services = (new Service())->paginateByCompany((int) $user['company_id'], $search, 10000);
+
+        $rows = array_map(static fn (array $service): array => [
+            $service['name'] ?? '',
+            $service['category_name'] ?? '',
+            $service['unit'] ?? '',
+            $service['average_time_minutes'] ?? '',
+            money_format_ptbr((float) ($service['price'] ?? 0)),
+            $service['status'] ?? '',
+            $service['description'] ?? '',
+        ], $services);
+
+        $this->downloadCsv('servicos.csv', ['Nome', 'Categoria', 'Unidade', 'Tempo medio', 'Preco', 'Status', 'Descricao'], $rows);
+    }
+
     public function store(): void
     {
         $user = $this->requireUser();
