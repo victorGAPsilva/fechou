@@ -1,6 +1,13 @@
 <?php
 
 declare(strict_types=1);
+
+$pdfTemplates = [
+    'modern' => 'Moderno',
+    'minimal' => 'Minimalista',
+    'executive' => 'Executivo',
+    'premium' => 'Premium',
+];
 ?>
 
 <section class="section-stack">
@@ -57,7 +64,16 @@ declare(strict_types=1);
                             <td>
                                 <div class="row-actions">
                                     <a class="button button-ghost" href="<?= e(url('/quotes/' . $quote['id'] . '/edit')) ?>">Editar</a>
-                                    <a class="button button-ghost" href="<?= e(url('/quotes/' . $quote['id'] . '/pdf')) ?>">PDF</a>
+                                    <form method="get" action="<?= e(url('/quotes/' . $quote['id'] . '/pdf')) ?>" class="pdf-select-form" data-no-loading="true">
+                                        <select name="template" aria-label="Modelo do PDF">
+                                            <?php foreach ($pdfTemplates as $templateKey => $templateLabel): ?>
+                                                <option value="<?= e($templateKey) ?>" <?= ($quote['template_key'] ?? 'modern') === $templateKey ? 'selected' : '' ?>>
+                                                    <?= e($templateLabel) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <button class="button button-ghost" type="submit">Baixar PDF</button>
+                                    </form>
                                     <a class="button button-ghost" href="<?= e(url('/contracts/new?quote_id=' . $quote['id'])) ?>">Contrato</a>
                                     <form method="post" action="<?= e(url('/quotes/' . $quote['id'] . '/delete')) ?>" class="inline-form" data-confirm-delete="Excluir este orçamento?">
                                         <?= csrf_field() ?>

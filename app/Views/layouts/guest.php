@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 $theme = $_COOKIE['theme'] ?? 'dark';
 $appName = config('app.name', 'Fechou');
+$flashSuccess = flash('success');
+$flashError = flash('error');
 ?><!DOCTYPE html>
 <html lang="pt-BR" data-theme="<?= e($theme) ?>">
 <head>
@@ -21,7 +23,17 @@ $appName = config('app.name', 'Fechou');
 
     <main class="auth-grid">
         <section class="auth-brand">
-            <div class="brand-mark">F</div>
+            <div class="brand-mark">
+                <img
+                    src="<?= e(asset('images/fechoulogo2-48.png')) ?>"
+                    srcset="<?= e(asset('images/fechoulogo2-48.png')) ?> 48w, <?= e(asset('images/fechoulogo2-96.png')) ?> 96w, <?= e(asset('images/fechoulogo2-160.png')) ?> 160w"
+                    sizes="48px"
+                    width="48"
+                    height="48"
+                    alt="<?= e($appName) ?>"
+                    decoding="async"
+                >
+            </div>
             <span class="eyebrow">Orcamentos profissionais Com poucos cliques</span>
             <h1>Feche mais vendas com orçamentos que parecem de produto premium.</h1>
             <p>Fechou foi desenhado para transformar propostas em conversão, com uma experiência rápida, elegante e confiável.</p>
@@ -45,18 +57,14 @@ $appName = config('app.name', 'Fechou');
                 </button>
             </div>
 
-            <?php if ($success = flash('success')): ?>
-                <div class="alert alert-success"><?= e($success) ?></div>
-            <?php endif; ?>
-
-            <?php if ($error = flash('error')): ?>
-                <div class="alert alert-error"><?= e($error) ?></div>
-            <?php endif; ?>
-
             <?= $content ?>
         </section>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        window.FechouFlash = <?= json_encode(['success' => $flashSuccess, 'error' => $flashError], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>;
+    </script>
     <script src="<?= e(asset('js/app.js')) ?>"></script>
 </body>
 </html>

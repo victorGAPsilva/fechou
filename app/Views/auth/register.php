@@ -8,12 +8,12 @@ declare(strict_types=1);
 
     <div class="field-group">
         <label for="company_name">Nome da empresa</label>
-        <input id="company_name" name="company_name" type="text" value="<?= e(old('company_name')) ?>" placeholder="Fechou Serviços">
+        <input id="company_name" name="company_name" type="text" autocomplete="organization" value="<?= e(old('company_name')) ?>" placeholder="Fechou Serviços">
     </div>
 
     <div class="field-group">
         <label for="name">Seu nome</label>
-        <input id="name" name="name" type="text" value="<?= e(old('name')) ?>" placeholder="Nome completo">
+        <input id="name" name="name" type="text" autocomplete="name" value="<?= e(old('name')) ?>" placeholder="Nome completo">
     </div>
 
     <div class="field-group">

@@ -6,6 +6,8 @@ $theme = $_COOKIE['theme'] ?? 'dark';
 $currentUser = auth_user();
 $appName = config('app.name', 'Fechou');
 $currentPath = current_path();
+$flashSuccess = flash('success');
+$flashError = flash('error');
 ?><!DOCTYPE html>
 <html lang="pt-BR" data-theme="<?= e($theme) ?>">
 <head>
@@ -20,7 +22,17 @@ $currentPath = current_path();
 <body class="shell shell-app">
     <aside class="sidebar">
         <div class="sidebar-brand">
-            <div class="brand-mark brand-mark-small">F</div>
+            <div class="brand-mark brand-mark-small">
+                <img
+                    src="<?= e(asset('images/fechoulogo2-48.png')) ?>"
+                    srcset="<?= e(asset('images/fechoulogo2-48.png')) ?> 48w, <?= e(asset('images/fechoulogo2-96.png')) ?> 96w"
+                    sizes="40px"
+                    width="40"
+                    height="40"
+                    alt="<?= e($appName) ?>"
+                    decoding="async"
+                >
+            </div>
             <div>
                 <strong><?= e($appName) ?></strong>
                 <span>Orçamentos premium</span>
@@ -41,9 +53,15 @@ $currentPath = current_path();
             <button class="button button-ghost sidebar-logout" type="submit">Sair</button>
         </form>
     </aside>
+    <button type="button" class="mobile-nav-backdrop" data-mobile-nav-close aria-label="Fechar menu"></button>
 
     <div class="workspace">
         <header class="topbar">
+            <button type="button" class="mobile-nav-toggle" data-mobile-nav-toggle aria-label="Abrir menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <div>
                 <span class="eyebrow">Operação ativa</span>
                 <h1><?= e($title ?? $appName) ?></h1>
@@ -64,18 +82,14 @@ $currentPath = current_path();
         </header>
 
         <main class="content-area">
-            <?php if ($success = flash('success')): ?>
-                <div class="alert alert-success"><?= e($success) ?></div>
-            <?php endif; ?>
-
-            <?php if ($error = flash('error')): ?>
-                <div class="alert alert-error"><?= e($error) ?></div>
-            <?php endif; ?>
-
             <?= $content ?>
         </main>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        window.FechouFlash = <?= json_encode(['success' => $flashSuccess, 'error' => $flashError], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>;
+    </script>
     <script src="<?= e(asset('js/app.js')) ?>"></script>
     <script src="<?= e(asset('js/clients.js')) ?>"></script>
     <script src="<?= e(asset('js/quotes.js')) ?>"></script>

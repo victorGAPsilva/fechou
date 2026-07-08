@@ -32,27 +32,27 @@ $client = $client ?? [];
             <div class="form-grid form-grid-2">
                 <div class="field-group">
                     <label for="name">Nome *</label>
-                    <input id="name" name="name" type="text" value="<?= e(old('name', $client['name'] ?? '')) ?>" placeholder="Nome do cliente">
+                    <input id="name" name="name" type="text" autocomplete="name" value="<?= e(old('name', $client['name'] ?? '')) ?>" placeholder="Nome do cliente">
                 </div>
 
                 <div class="field-group">
                     <label for="company_name">Empresa</label>
-                    <input id="company_name" name="company_name" type="text" value="<?= e(old('company_name', $client['company_name'] ?? '')) ?>" placeholder="Nome da empresa">
+                    <input id="company_name" name="company_name" type="text" autocomplete="organization" value="<?= e(old('company_name', $client['company_name'] ?? '')) ?>" placeholder="Nome da empresa">
                 </div>
 
                 <div class="field-group">
                     <label for="email">E-mail</label>
-                    <input id="email" name="email" type="email" value="<?= e(old('email', $client['email'] ?? '')) ?>" placeholder="contato@cliente.com">
+                    <input id="email" name="email" type="email" autocomplete="email" value="<?= e(old('email', $client['email'] ?? '')) ?>" placeholder="contato@cliente.com">
                 </div>
 
                 <div class="field-group">
                     <label for="phone">Telefone</label>
-                    <input id="phone" name="phone" type="text" value="<?= e(old('phone', $client['phone'] ?? '')) ?>" placeholder="(11) 99999-9999">
+                    <input id="phone" name="phone" type="tel" autocomplete="tel" value="<?= e(old('phone', $client['phone'] ?? '')) ?>" placeholder="(11) 99999-9999">
                 </div>
 
                 <div class="field-group">
                     <label for="whatsapp">WhatsApp</label>
-                    <input id="whatsapp" name="whatsapp" type="text" value="<?= e(old('whatsapp', $client['whatsapp'] ?? '')) ?>" placeholder="(11) 99999-9999">
+                    <input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" value="<?= e(old('whatsapp', $client['whatsapp'] ?? '')) ?>" placeholder="(11) 99999-9999">
                 </div>
 
                 <div class="field-group">
@@ -70,7 +70,7 @@ $client = $client ?? [];
 
                 <div class="field-group">
                     <label for="zip_code">CEP</label>
-                    <input id="zip_code" name="zip_code" type="text" value="<?= e(old('zip_code', $client['zip_code'] ?? '')) ?>" placeholder="00000-000">
+                    <input id="zip_code" name="zip_code" type="text" inputmode="numeric" autocomplete="postal-code" value="<?= e(old('zip_code', $client['zip_code'] ?? '')) ?>" placeholder="00000-000">
                 </div>
 
                 <div class="field-group">

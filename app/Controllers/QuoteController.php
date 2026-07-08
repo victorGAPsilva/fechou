@@ -152,8 +152,10 @@ final class QuoteController extends Controller
         }
 
         $items = $quoteModel->getItems((int) $quote['id']);
-        $pdf = (new QuotePdfGenerator())->render($quote, $items);
-        $filename = preg_replace('/[^A-Za-z0-9_-]+/', '-', (string) $quote['quote_number']) ?: 'orcamento';
+        $template = (string) ($_GET['template'] ?? ($quote['template_key'] ?? 'modern'));
+        $template = in_array($template, ['modern', 'minimal', 'executive', 'premium'], true) ? $template : 'modern';
+        $pdf = (new QuotePdfGenerator())->render($quote, $items, $template);
+        $filename = preg_replace('/[^A-Za-z0-9_-]+/', '-', (string) $quote['quote_number'] . '-' . $template) ?: 'orcamento';
 
         header('Content-Type: application/pdf');
         header('Content-Disposition: attachment; filename="' . $filename . '.pdf"');
