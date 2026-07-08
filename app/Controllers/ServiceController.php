@@ -38,11 +38,20 @@ final class ServiceController extends Controller
 
         $data = $this->sanitize($_POST);
         $data['company_id'] = (int) $user['company_id'];
-        $data['service_category_id'] = $this->resolveCategoryId((int) $user['company_id'], (string) ($data['category_name'] ?? ''));
 
         if ($data['name'] === '') {
             $this->failRedirect('/services/new', 'Informe o nome do serviço.', $_POST);
         }
+
+        if (!$this->isNonNegativeNumber($data['price'])) {
+            $this->failRedirect('/services/new', 'Informe um preço válido para o serviço.', $_POST);
+        }
+
+        if ($data['average_time_minutes'] !== '' && !$this->isNonNegativeInteger($data['average_time_minutes'])) {
+            $this->failRedirect('/services/new', 'Informe um tempo médio válido.', $_POST);
+        }
+
+        $data['service_category_id'] = $this->resolveCategoryId((int) $user['company_id'], (string) ($data['category_name'] ?? ''));
 
         (new Service())->create($data);
 
@@ -82,11 +91,20 @@ final class ServiceController extends Controller
 
         $data = $this->sanitize($_POST);
         $data['company_id'] = (int) $user['company_id'];
-        $data['service_category_id'] = $this->resolveCategoryId((int) $user['company_id'], (string) ($data['category_name'] ?? ''));
 
         if ($data['name'] === '') {
             $this->failRedirect('/services/' . $id . '/edit', 'Informe o nome do serviço.', $_POST);
         }
+
+        if (!$this->isNonNegativeNumber($data['price'])) {
+            $this->failRedirect('/services/' . $id . '/edit', 'Informe um preço válido para o serviço.', $_POST);
+        }
+
+        if ($data['average_time_minutes'] !== '' && !$this->isNonNegativeInteger($data['average_time_minutes'])) {
+            $this->failRedirect('/services/' . $id . '/edit', 'Informe um tempo médio válido.', $_POST);
+        }
+
+        $data['service_category_id'] = $this->resolveCategoryId((int) $user['company_id'], (string) ($data['category_name'] ?? ''));
 
         $serviceModel->update((int) $id, (int) $user['company_id'], $data);
 
@@ -176,5 +194,17 @@ final class ServiceController extends Controller
         ]);
 
         return (int) \App\Core\Database::connection()->lastInsertId();
+    }
+
+    private function isNonNegativeNumber(string $value): bool
+    {
+        $normalized = str_replace(',', '.', trim($value));
+
+        return is_numeric($normalized) && (float) $normalized >= 0;
+    }
+
+    private function isNonNegativeInteger(string $value): bool
+    {
+        return ctype_digit(trim($value));
     }
 }

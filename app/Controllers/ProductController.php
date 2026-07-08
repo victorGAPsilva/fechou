@@ -38,11 +38,20 @@ final class ProductController extends Controller
 
         $data = $this->sanitize($_POST);
         $data['company_id'] = (int) $user['company_id'];
-        $data['product_category_id'] = $this->resolveCategoryId((int) $user['company_id'], (string) ($data['category_name'] ?? ''));
 
         if ($data['name'] === '') {
             $this->failRedirect('/products/new', 'Informe o nome do produto.', $_POST);
         }
+
+        if (!$this->isNonNegativeNumber($data['price'])) {
+            $this->failRedirect('/products/new', 'Informe um preço válido para o produto.', $_POST);
+        }
+
+        if (!$this->isNonNegativeInteger($data['quantity']) || !$this->isNonNegativeInteger($data['stock_quantity'])) {
+            $this->failRedirect('/products/new', 'Informe quantidades válidas para o produto.', $_POST);
+        }
+
+        $data['product_category_id'] = $this->resolveCategoryId((int) $user['company_id'], (string) ($data['category_name'] ?? ''));
 
         (new Product())->create($data);
 
@@ -82,11 +91,20 @@ final class ProductController extends Controller
 
         $data = $this->sanitize($_POST);
         $data['company_id'] = (int) $user['company_id'];
-        $data['product_category_id'] = $this->resolveCategoryId((int) $user['company_id'], (string) ($data['category_name'] ?? ''));
 
         if ($data['name'] === '') {
             $this->failRedirect('/products/' . $id . '/edit', 'Informe o nome do produto.', $_POST);
         }
+
+        if (!$this->isNonNegativeNumber($data['price'])) {
+            $this->failRedirect('/products/' . $id . '/edit', 'Informe um preço válido para o produto.', $_POST);
+        }
+
+        if (!$this->isNonNegativeInteger($data['quantity']) || !$this->isNonNegativeInteger($data['stock_quantity'])) {
+            $this->failRedirect('/products/' . $id . '/edit', 'Informe quantidades válidas para o produto.', $_POST);
+        }
+
+        $data['product_category_id'] = $this->resolveCategoryId((int) $user['company_id'], (string) ($data['category_name'] ?? ''));
 
         $productModel->update((int) $id, (int) $user['company_id'], $data);
 
@@ -178,5 +196,17 @@ final class ProductController extends Controller
         ]);
 
         return (int) \App\Core\Database::connection()->lastInsertId();
+    }
+
+    private function isNonNegativeNumber(string $value): bool
+    {
+        $normalized = str_replace(',', '.', trim($value));
+
+        return is_numeric($normalized) && (float) $normalized >= 0;
+    }
+
+    private function isNonNegativeInteger(string $value): bool
+    {
+        return ctype_digit(trim($value));
     }
 }

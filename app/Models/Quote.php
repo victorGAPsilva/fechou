@@ -11,7 +11,7 @@ final class Quote extends BaseModel
         $sql = '
             SELECT quotes.*, clients.name AS client_name
             FROM quotes
-            LEFT JOIN clients ON clients.id = quotes.client_id
+            LEFT JOIN clients ON clients.id = quotes.client_id AND clients.company_id = quotes.company_id
             WHERE quotes.company_id = :company_id';
         $params = ['company_id' => $companyId];
 
@@ -33,7 +33,7 @@ final class Quote extends BaseModel
         $sql = '
             SELECT COUNT(*)
             FROM quotes
-            LEFT JOIN clients ON clients.id = quotes.client_id
+            LEFT JOIN clients ON clients.id = quotes.client_id AND clients.company_id = quotes.company_id
             WHERE quotes.company_id = :company_id';
         $params = ['company_id' => $companyId];
 
@@ -53,7 +53,7 @@ final class Quote extends BaseModel
         $statement = $this->db->prepare(
             'SELECT quotes.*, clients.name AS client_name
              FROM quotes
-             LEFT JOIN clients ON clients.id = quotes.client_id
+             LEFT JOIN clients ON clients.id = quotes.client_id AND clients.company_id = quotes.company_id
              WHERE quotes.id = :id AND quotes.company_id = :company_id
              LIMIT 1'
         );

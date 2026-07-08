@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Core\Database;
+use App\Models\Client;
 use App\Models\Product;
 use App\Models\Quote;
 use App\Models\Service;
@@ -46,7 +47,19 @@ final class QuoteController extends Controller
             $this->failRedirect('/quotes/new', 'Selecione um cliente.', $_POST);
         }
 
-        (new Quote())->createDraft($payload, $payload['items']);
+        if (!(new Client())->findByIdAndCompany((int) $payload['client_id'], (int) $user['company_id'])) {
+            $this->failRedirect('/quotes/new', 'Cliente inválido para esta empresa.', $_POST);
+        }
+
+        if ($payload['items'] === []) {
+            $this->failRedirect('/quotes/new', 'Adicione pelo menos um item válido ao orçamento.', $_POST);
+        }
+
+        try {
+            (new Quote())->createDraft($payload, $payload['items']);
+        } catch (\Throwable) {
+            $this->failRedirect('/quotes/new', 'Não foi possível salvar o orçamento. Revise os dados e tente novamente.', $_POST);
+        }
 
         clear_old();
         set_flash('success', 'Orçamento criado com sucesso.');
@@ -93,7 +106,19 @@ final class QuoteController extends Controller
             $this->failRedirect('/quotes/' . $id . '/edit', 'Selecione um cliente.', $_POST);
         }
 
-        $quoteModel->updateDraft((int) $id, (int) $user['company_id'], $payload, $payload['items']);
+        if (!(new Client())->findByIdAndCompany((int) $payload['client_id'], (int) $user['company_id'])) {
+            $this->failRedirect('/quotes/' . $id . '/edit', 'Cliente inválido para esta empresa.', $_POST);
+        }
+
+        if ($payload['items'] === []) {
+            $this->failRedirect('/quotes/' . $id . '/edit', 'Adicione pelo menos um item válido ao orçamento.', $_POST);
+        }
+
+        try {
+            $quoteModel->updateDraft((int) $id, (int) $user['company_id'], $payload, $payload['items']);
+        } catch (\Throwable) {
+            $this->failRedirect('/quotes/' . $id . '/edit', 'Não foi possível salvar o orçamento. Revise os dados e tente novamente.', $_POST);
+        }
 
         clear_old();
         set_flash('success', 'Orçamento atualizado com sucesso.');
@@ -164,6 +189,7 @@ final class QuoteController extends Controller
     {
         $items = [];
         $rawItems = $input['items'] ?? [];
+        $clientId = trim((string) ($input['client_id'] ?? ''));
 
         foreach ($rawItems as $row) {
             $description = trim((string) ($row['description'] ?? ''));
@@ -196,7 +222,7 @@ final class QuoteController extends Controller
 
         return [
             'company_id' => $companyId,
-            'client_id' => $input['client_id'] !== '' ? (int) $input['client_id'] : null,
+            'client_id' => $clientId !== '' ? (int) $clientId : null,
             'quote_number' => trim((string) ($input['quote_number'] ?? '')) ?: $quoteModel->nextNumber($companyId),
             'title' => trim((string) ($input['title'] ?? '')) ?: 'Novo orçamento',
             'status' => in_array(($input['status'] ?? 'draft'), ['draft', 'sent', 'viewed', 'accepted', 'rejected', 'canceled'], true) ? (string) $input['status'] : 'draft',
@@ -205,7 +231,7 @@ final class QuoteController extends Controller
             'shipping_total' => $shippingTotal,
             'subtotal_total' => $calculated['subtotal'],
             'total' => $calculated['total'],
-            'validity_days' => (int) ($input['validity_days'] ?? 7),
+            'validity_days' => max(1, (int) ($input['validity_days'] ?? 7)),
             'payment_terms' => trim((string) ($input['payment_terms'] ?? '')),
             'warranty' => trim((string) ($input['warranty'] ?? '')),
             'notes' => trim((string) ($input['notes'] ?? '')),
