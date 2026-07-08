@@ -294,15 +294,21 @@ html {
 
 .auth-grid {
     min-height: 100vh;
+    width: min(100%, 1880px);
+    margin: 0 auto;
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
-    gap: 28px;
-    padding: 32px;
+    grid-template-columns: minmax(460px, 1fr) minmax(420px, 0.74fr);
+    gap: clamp(28px, 3vw, 56px);
+    padding: clamp(20px, 3vw, 46px);
     align-items: center;
 }
 
 .auth-brand {
-    padding: 58px 54px;
+    min-height: min(82vh, 760px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(42px, 4.4vw, 72px);
     border-radius: var(--radius-xl);
     overflow: hidden;
     animation: fadeUp 0.7s var(--ease-out) both;
@@ -471,7 +477,10 @@ html {
    ============================================================ */
 
 .auth-card {
-    padding: 30px;
+    width: 100%;
+    max-width: 780px;
+    justify-self: center;
+    padding: clamp(24px, 2.4vw, 34px);
     border-radius: var(--radius-xl);
     animation: fadeUp 0.7s var(--ease-out) both;
     animation-delay: 0.12s;
@@ -503,6 +512,7 @@ html {
     font-weight: 500;
     font-size: 1.7rem;
     letter-spacing: -0.01em;
+    margin-bottom: 0;
 }
 
 .card-header .eyebrow {
@@ -517,16 +527,15 @@ html {
     background: transparent;
     cursor: pointer;
     flex-shrink: 0;
+    padding: 0;
 }
 
 .theme-toggle-track {
     position: relative;
-    display: inline-flex;
-    align-items: center;
+    display: block;
     width: 58px;
     height: 32px;
     border-radius: 999px;
-    padding: 4px;
     background: var(--accent-soft);
     border: 1px solid var(--border);
     transition: background 0.3s var(--ease-out);
@@ -566,7 +575,7 @@ html {
 }
 
 .theme-toggle-thumb {
-    position: relative;
+    position: absolute;
     z-index: 1;
     top: 4px;
     left: 4px;
@@ -579,7 +588,7 @@ html {
 }
 
 [data-theme="dark"] .theme-toggle-thumb {
-    transform: translateX(24px);
+    transform: translateX(26px);
 }
 
 /* ============================================================
@@ -595,6 +604,12 @@ html {
 .field-group {
     display: grid;
     gap: 8px;
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .form-grid {
@@ -617,6 +632,7 @@ label {
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--muted);
+    line-height: 1.2;
 }
 
 input,
@@ -647,16 +663,56 @@ input:focus {
 }
 
 .input-with-action {
+    min-height: 50px;
     padding-right: 8px;
     border-radius: var(--radius-md);
     border: 1px solid var(--border);
     background: var(--surface-strong);
+    overflow: hidden;
 }
 
 .input-with-action input {
+    min-width: 0;
     border: 0;
     background: transparent;
     box-shadow: none;
+}
+
+.check-field {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 24px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.check-field input {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    padding: 0;
+    accent-color: var(--accent);
+    box-shadow: none;
+}
+
+.form-row-between {
+    flex-wrap: wrap;
+}
+
+.form-row-between a {
+    margin-left: auto;
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border-strong);
+    transition: border-color 0.2s var(--ease-out), color 0.2s var(--ease-out);
+}
+
+.form-row-between a:hover {
+    color: var(--accent);
+    border-color: var(--accent);
 }
 
 .inline-action,
@@ -1294,6 +1350,10 @@ input:focus {
     .auth-brand::before {
         display: none;
     }
+
+    .auth-brand {
+        min-height: auto;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1331,5 +1391,31 @@ input:focus {
     .field-span-2 {
         grid-template-columns: 1fr;
         grid-column: auto;
+    }
+
+    .auth-card .card-header {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    .auth-card .form-row-between {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .auth-card .form-row-between a {
+        margin-left: auto;
+    }
+}
+
+@media (max-width: 360px) {
+    .auth-card .form-row-between {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .auth-card .form-row-between a {
+        margin-left: 0;
     }
 }
