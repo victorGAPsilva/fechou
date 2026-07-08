@@ -33,6 +33,7 @@ $currentPath = current_path();
             <a class="<?= str_starts_with($currentPath, '/services') ? 'active' : '' ?>" href="<?= e(url('/services')) ?>">Serviços</a>
             <a class="<?= str_starts_with($currentPath, '/products') ? 'active' : '' ?>" href="<?= e(url('/products')) ?>">Produtos</a>
             <a class="<?= str_starts_with($currentPath, '/quotes') ? 'active' : '' ?>" href="<?= e(url('/quotes')) ?>">Orçamentos</a>
+            <a class="<?= str_starts_with($currentPath, '/contracts') ? 'active' : '' ?>" href="<?= e(url('/contracts')) ?>">Contratos</a>
         </nav>
 
         <form method="post" action="<?= e(url('/logout')) ?>">

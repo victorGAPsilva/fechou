@@ -10,6 +10,7 @@ use App\Models\Client;
 use App\Models\Product;
 use App\Models\Quote;
 use App\Models\Service;
+use App\Services\QuotePdfGenerator;
 
 final class QuoteController extends Controller
 {
@@ -137,6 +138,28 @@ final class QuoteController extends Controller
         (new Quote())->delete((int) $id, (int) $user['company_id']);
         set_flash('success', 'Orçamento excluído com sucesso.');
         redirect('/quotes');
+    }
+
+    public function downloadPdf(string $id): void
+    {
+        $user = $this->requireUser();
+        $quoteModel = new Quote();
+        $quote = $quoteModel->findByIdAndCompany((int) $id, (int) $user['company_id']);
+
+        if (!$quote) {
+            set_flash('error', 'Orçamento não encontrado.');
+            redirect('/quotes');
+        }
+
+        $items = $quoteModel->getItems((int) $quote['id']);
+        $pdf = (new QuotePdfGenerator())->render($quote, $items);
+        $filename = preg_replace('/[^A-Za-z0-9_-]+/', '-', (string) $quote['quote_number']) ?: 'orcamento';
+
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . $filename . '.pdf"');
+        header('Content-Length: ' . strlen($pdf));
+        echo $pdf;
+        exit;
     }
 
     private function renderBuilder(string $title, string $action, array $data): void

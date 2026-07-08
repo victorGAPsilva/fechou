@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Controllers\AuthController;
 use App\Controllers\ClientController;
+use App\Controllers\ContractController;
 use App\Controllers\DashboardController;
 use App\Controllers\ProductController;
 use App\Controllers\QuoteController;
@@ -51,7 +52,15 @@ return static function (Router $router): void {
     $router->get('/quotes', [QuoteController::class, 'index']);
     $router->get('/quotes/new', [QuoteController::class, 'create']);
     $router->post('/quotes', [QuoteController::class, 'store']);
+    $router->get('/quotes/{id}/pdf', [QuoteController::class, 'downloadPdf']);
     $router->get('/quotes/{id}/edit', [QuoteController::class, 'edit']);
     $router->post('/quotes/{id}', [QuoteController::class, 'update']);
     $router->post('/quotes/{id}/delete', [QuoteController::class, 'destroy']);
+
+    $router->get('/contracts', [ContractController::class, 'index']);
+    $router->get('/contracts/new', [ContractController::class, 'create']);
+    $router->post('/contracts', [ContractController::class, 'store']);
+    $router->get('/contracts/{id}/edit', [ContractController::class, 'edit']);
+    $router->post('/contracts/{id}', [ContractController::class, 'update']);
+    $router->post('/contracts/{id}/delete', [ContractController::class, 'destroy']);
 };

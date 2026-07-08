@@ -57,6 +57,8 @@ declare(strict_types=1);
                             <td>
                                 <div class="row-actions">
                                     <a class="button button-ghost" href="<?= e(url('/quotes/' . $quote['id'] . '/edit')) ?>">Editar</a>
+                                    <a class="button button-ghost" href="<?= e(url('/quotes/' . $quote['id'] . '/pdf')) ?>">PDF</a>
+                                    <a class="button button-ghost" href="<?= e(url('/contracts/new?quote_id=' . $quote['id'])) ?>">Contrato</a>
                                     <form method="post" action="<?= e(url('/quotes/' . $quote['id'] . '/delete')) ?>" class="inline-form" data-confirm-delete="Excluir este orçamento?">
                                         <?= csrf_field() ?>
                                         <button class="button button-danger" type="submit">Excluir</button>
