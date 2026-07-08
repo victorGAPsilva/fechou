@@ -20,6 +20,8 @@ return static function (Router $router): void {
 
     $router->get('/forgot-password', [AuthController::class, 'showForgotPassword']);
     $router->post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    $router->get('/reset-password', [AuthController::class, 'showResetPassword']);
+    $router->post('/reset-password', [AuthController::class, 'resetPassword']);
 
     $router->post('/logout', [AuthController::class, 'logout']);
 

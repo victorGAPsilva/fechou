@@ -30,6 +30,17 @@ final class User extends BaseModel
         return $user ?: null;
     }
 
+    public static function findAllByEmail(string $email): array
+    {
+        $db = \App\Core\Database::connection();
+        $statement = $db->prepare('SELECT * FROM users WHERE email = :email ORDER BY id ASC');
+        $statement->execute([
+            'email' => mb_strtolower(trim($email)),
+        ]);
+
+        return $statement->fetchAll();
+    }
+
     public function create(array $data): int
     {
         $statement = $this->db->prepare(
@@ -56,5 +67,29 @@ final class User extends BaseModel
     {
         $statement = $this->db->prepare('UPDATE users SET last_login_at = NOW(), updated_at = NOW() WHERE id = :id');
         $statement->execute(['id' => $id]);
+    }
+
+    public function updateRememberToken(int $id, string $tokenHash): void
+    {
+        $statement = $this->db->prepare('UPDATE users SET remember_token = :remember_token, updated_at = NOW() WHERE id = :id');
+        $statement->execute([
+            'id' => $id,
+            'remember_token' => $tokenHash,
+        ]);
+    }
+
+    public function clearRememberToken(int $id): void
+    {
+        $statement = $this->db->prepare('UPDATE users SET remember_token = NULL, updated_at = NOW() WHERE id = :id');
+        $statement->execute(['id' => $id]);
+    }
+
+    public function updatePassword(int $id, string $password): void
+    {
+        $statement = $this->db->prepare('UPDATE users SET password = :password, remember_token = NULL, updated_at = NOW() WHERE id = :id');
+        $statement->execute([
+            'id' => $id,
+            'password' => password_hash($password, PASSWORD_DEFAULT),
+        ]);
     }
 }

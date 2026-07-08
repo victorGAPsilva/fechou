@@ -85,6 +85,7 @@ function old(string $key, mixed $default = ''): mixed
 
 function with_old(array $data): void
 {
+    unset($data['password'], $data['password_confirmation'], $data['_token']);
     $_SESSION['_old'] = $data;
 }
 
@@ -109,7 +110,13 @@ function csrf_field(): string
 
 function verify_csrf_token(?string $token): bool
 {
-    return is_string($token) && hash_equals((string) ($_SESSION['_csrf'] ?? ''), $token);
+    if (!is_string($token) || !hash_equals((string) ($_SESSION['_csrf'] ?? ''), $token)) {
+        return false;
+    }
+
+    unset($_SESSION['_csrf']);
+
+    return true;
 }
 
 function auth_user(): ?array
